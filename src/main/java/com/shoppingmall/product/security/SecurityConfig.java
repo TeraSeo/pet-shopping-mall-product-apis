@@ -34,7 +34,7 @@ public class SecurityConfig {
         http.sessionManagement(httpSecuritySessionManagementConfigurer ->
                 httpSecuritySessionManagementConfigurer.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
         http.authorizeHttpRequests(authorizationManagerRequestMatcherRegistry ->
-                authorizationManagerRequestMatcherRegistry.anyRequest().authenticated());
+                authorizationManagerRequestMatcherRegistry.anyRequest().hasAnyAuthority("USER", "SELLER", "STAFF", "ADMIN"));
 
         http.exceptionHandling(httpSecurityExceptionHandlingConfigurer ->
                 httpSecurityExceptionHandlingConfigurer

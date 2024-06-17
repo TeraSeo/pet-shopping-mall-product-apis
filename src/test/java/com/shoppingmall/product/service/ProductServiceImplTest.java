@@ -22,8 +22,8 @@ class ProductServiceImplTest {
 
     @Test
     void uploadProductImage() throws IOException {
-        MultipartFile mockFile = new MockMultipartFile("image", "src/test/resources/play.png", "image/jpeg", "src/test/resources/appstore.png".getBytes());
-        String fileUrl = productService.uploadProductImage(mockFile);
+        MultipartFile file = new MockMultipartFile("image", "src/test/resources/play.png", "image/jpeg", "src/test/resources/appstore.png".getBytes());
+        String fileUrl = productService.uploadProductImage(file);
         LOGGER.debug("file url: " + fileUrl);
     }
 }

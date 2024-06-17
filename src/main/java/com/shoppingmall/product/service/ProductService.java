@@ -8,5 +8,5 @@ public interface ProductService {
 
     Boolean addProduct();
 
-    String uploadProductImage(MultipartFile image) throws IOException;
+    String uploadProductImage(MultipartFile file) throws IOException;
 }

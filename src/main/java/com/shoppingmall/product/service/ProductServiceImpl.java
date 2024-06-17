@@ -28,14 +28,14 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public String uploadProductImage(MultipartFile image) throws IOException {
-        String originalFilename = image.getOriginalFilename();
+    public String uploadProductImage(MultipartFile file) throws IOException {
+        String originalFilename = file.getOriginalFilename();
 
         ObjectMetadata metadata = new ObjectMetadata();
-        metadata.setContentType(image.getContentType());
-        metadata.setContentLength(image.getSize());
+        metadata.setContentType(file.getContentType());
+        metadata.setContentLength(file.getSize());
 
-        s3Client.putObject(bucket, originalFilename, image.getInputStream(), metadata);
+        s3Client.putObject(bucket, originalFilename, file.getInputStream(), metadata);
 
         return s3Client.getUrl(bucket, originalFilename).toString();
     }

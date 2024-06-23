@@ -35,4 +35,7 @@ public class ProductDetail extends BaseEntity {
     @ManyToOne
     private Product product;
 
+    @ManyToOne
+    private User user;
+
 }

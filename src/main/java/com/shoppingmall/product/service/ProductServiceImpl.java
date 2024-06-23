@@ -5,8 +5,10 @@ import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.shoppingmall.product.dto.ProductDto;
 import com.shoppingmall.product.entity.Product;
 import com.shoppingmall.product.entity.ProductDetail;
+import com.shoppingmall.product.entity.User;
 import com.shoppingmall.product.repository.ProductDetailRepository;
 import com.shoppingmall.product.repository.ProductRepository;
+import com.shoppingmall.product.repository.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,7 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 
@@ -30,12 +32,14 @@ public class ProductServiceImpl implements ProductService {
     private final AmazonS3Client s3Client;
     private final ProductRepository productRepository;
     private final ProductDetailRepository productDetailRepository;
+    private final UserRepository userRepository;
 
     @Autowired
-    public ProductServiceImpl(AmazonS3Client s3Client, ProductRepository productRepository, ProductDetailRepository productDetailRepository) {
+    public ProductServiceImpl(AmazonS3Client s3Client, ProductRepository productRepository, ProductDetailRepository productDetailRepository, UserRepository userRepository) {
         this.s3Client = s3Client;
         this.productRepository = productRepository;
         this.productDetailRepository = productDetailRepository;
+        this.userRepository = userRepository;
     }
 
     @Override
@@ -48,9 +52,15 @@ public class ProductServiceImpl implements ProductService {
         else {
             product = Product.builder()
                     .category(productDto.getCategory())
+                    .productDetails(new HashSet<>())
                     .build();
-
             productRepository.save(product);
+        }
+
+        Optional<User> u = userRepository.findById(Long.valueOf(productDto.getUser_id()));
+        User user = null;
+        if (u.isPresent()) {
+            user = u.get();
         }
 
         LOGGER.debug("file name: " + productDto.getImage().getOriginalFilename());
@@ -63,9 +73,11 @@ public class ProductServiceImpl implements ProductService {
                 .deliveryFee(productDto.getDeliveryFee())
                 .image(productDto.getImage().getOriginalFilename())
                 .subCategory(productDto.getSubCategory())
+                .user(user)
                 .build();
 
         product.add(productDetail);
+        user.add(productDetail);
 
         productDetailRepository.save(productDetail);
         return true;
@@ -82,5 +94,11 @@ public class ProductServiceImpl implements ProductService {
         s3Client.putObject(bucket, originalFilename, image.getInputStream(), metadata);
 
         return true;
+    }
+
+    @Override
+    public List<Product> getAllProducts() {
+        List<Product> products = productRepository.findAll();
+        return products;
     }
 }

@@ -24,7 +24,7 @@ public class Product {
     private Category category;
 
     @OneToMany(mappedBy = "product", fetch = FetchType.EAGER)
-    private Set<ProductDetail> productDetails = new HashSet<>();
+    private Set<ProductDetail> productDetails;
 
     public void add(ProductDetail productDetail) {
         productDetail.setProduct(this);

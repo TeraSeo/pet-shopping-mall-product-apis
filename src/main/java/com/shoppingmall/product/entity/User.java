@@ -27,12 +27,18 @@ public class User extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private Role role;
     private Boolean isVerified;
-    @OneToMany(mappedBy = "user", fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "user", fetch = FetchType.EAGER, orphanRemoval = true, cascade = CascadeType.PERSIST)
     private Set<ProductDetail> productDetails = new HashSet<>();
 
-    public void add(ProductDetail productDetail) {
+    public void addProductDetail(ProductDetail productDetail) {
         productDetail.setUser(this);
         getProductDetails().add(productDetail);
+        updateModifiedDate();
+    }
+
+    public void removeProductDetail(ProductDetail productDetail) {
+        productDetail.setUser(null);
+        getProductDetails().remove(productDetail);
         updateModifiedDate();
     }
 

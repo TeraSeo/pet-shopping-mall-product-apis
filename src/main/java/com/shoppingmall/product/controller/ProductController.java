@@ -7,7 +7,6 @@ import com.shoppingmall.product.service.ProductService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,8 +17,6 @@ import java.util.*;
 @RequestMapping("/api/product")
 public class ProductController {
 
-    @Value("${s3.url}")
-    private String url;
     private static final Logger LOGGER = LoggerFactory.getLogger(ProductController.class);
     private final ProductService productService;
 
@@ -43,6 +40,7 @@ public class ProductController {
                 Set<ProductDetail> productDetails = product.getProductDetails();
                 productDetails.stream().forEach(productDetail -> {
                     ProductDto productDto = ProductDto.builder()
+                            .id(productDetail.getId())
                             .name(productDetail.getName())
                             .price(productDetail.getPrice())
                             .deliveryFee(productDetail.getDeliveryFee())
@@ -51,7 +49,7 @@ public class ProductController {
                             .quantity(productDetail.getQuantity())
                             .category(product.getCategory())
                             .subCategory(productDetail.getSubCategory())
-                            .imagePath(url + productDetail.getImage())
+                            .imagePath(productDetail.getImage())
                             .build();
                     productDtoList.add(productDto);
                 });
@@ -62,13 +60,22 @@ public class ProductController {
 
     @PostMapping("/add/product")
     public ResponseEntity<Boolean> addProduct(@ModelAttribute ProductDto productDto) throws IOException {
-        LOGGER.debug("image: " + productDto.getImage().getOriginalFilename());
+        LOGGER.debug("add product");
+        Random random = new Random();
+        String fileName = productDto.getImage().getOriginalFilename() + random.nextInt(100000);
         Boolean isProductSaved = productService.addProduct(productDto);
         if (isProductSaved) {
-            Boolean isUploaded = productService.uploadProductImage(productDto.getImage());
+            Boolean isUploaded = productService.uploadProductImage(productDto.getImage(), fileName);
             return ResponseEntity.ok(isUploaded);
         }
         return ResponseEntity.ok(false);
+    }
+
+    @DeleteMapping("/delete/products")
+    public ResponseEntity<Boolean> deleteProducts(@RequestHeader List<String> productIds, @RequestHeader List<String> imagePaths) throws IOException {
+        LOGGER.debug("delete products");
+        Boolean isDeleted = productService.deleteProducts(productIds, imagePaths);
+        return ResponseEntity.ok(isDeleted);
     }
 
 }

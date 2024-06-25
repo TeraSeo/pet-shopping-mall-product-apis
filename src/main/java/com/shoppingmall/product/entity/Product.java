@@ -23,12 +23,17 @@ public class Product {
     @Column(nullable = false)
     private Category category;
 
-    @OneToMany(mappedBy = "product", fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "product", fetch = FetchType.EAGER, orphanRemoval = true, cascade = CascadeType.PERSIST)
     private Set<ProductDetail> productDetails;
 
-    public void add(ProductDetail productDetail) {
+    public void addProductDetail(ProductDetail productDetail) {
         productDetail.setProduct(this);
         getProductDetails().add(productDetail);
+    }
+
+    public void removeProductDetail(ProductDetail productDetail) {
+        productDetail.setProduct(null);
+        getProductDetails().remove(productDetail);
     }
 
 }

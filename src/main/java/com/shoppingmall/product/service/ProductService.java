@@ -11,7 +11,11 @@ public interface ProductService {
 
     Boolean addProduct(ProductDto productDto);
 
-    Boolean uploadProductImage(MultipartFile image) throws IOException;
+    Boolean uploadProductImage(MultipartFile image, String fileName) throws IOException;
+
+    void deleteProductImage(String fileName);
 
     List<Product> getAllProducts();
+
+    Boolean deleteProducts(List<String> productIds, List<String> imagePaths);
 }

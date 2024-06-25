@@ -76,29 +76,57 @@ public class ProductServiceImpl implements ProductService {
                 .user(user)
                 .build();
 
-        product.add(productDetail);
-        user.add(productDetail);
+        product.addProductDetail(productDetail);
+        user.addProductDetail(productDetail);
 
         productDetailRepository.save(productDetail);
         return true;
     }
 
     @Override
-    public Boolean uploadProductImage(MultipartFile image) throws IOException {
-        String originalFilename = image.getOriginalFilename();
+    public Boolean uploadProductImage(MultipartFile image, String fileName) throws IOException {
 
         ObjectMetadata metadata = new ObjectMetadata();
         metadata.setContentType(image.getContentType());
         metadata.setContentLength(image.getSize());
 
-        s3Client.putObject(bucket, originalFilename, image.getInputStream(), metadata);
+        s3Client.putObject(bucket, fileName, image.getInputStream(), metadata);
 
         return true;
+    }
+
+    @Override
+    public void deleteProductImage(String fileName) {
+        s3Client.deleteObject(bucket, fileName);
     }
 
     @Override
     public List<Product> getAllProducts() {
         List<Product> products = productRepository.findAll();
         return products;
+    }
+
+    @Override
+    public Boolean deleteProducts(List<String> productDetailIds, List<String> imagePaths) {
+        int size = Math.min(productDetailIds.size(), imagePaths.size());
+        for (int i = 0; i < size; i++) {
+            String id = productDetailIds.get(i);
+            String path = imagePaths.get(i);
+
+            Optional<ProductDetail> p = productDetailRepository.findById(Long.valueOf(id));
+            if (p.isPresent()) {
+                ProductDetail productDetail = p.get();
+                Product product = productDetail.getProduct();
+                User user = productDetail.getUser();
+
+                product.removeProductDetail(productDetail);
+                user.removeProductDetail(productDetail);
+
+                productRepository.save(product);
+            }
+
+            deleteProductImage(path);
+        }
+        return true;
     }
 }

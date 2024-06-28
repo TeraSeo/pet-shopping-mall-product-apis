@@ -1,6 +1,8 @@
 package com.shoppingmall.product.controller;
 
 import com.shoppingmall.product.dto.ProductDto;
+import com.shoppingmall.product.dto.ProductDtoWithoutImage;
+import com.shoppingmall.product.entity.Category;
 import com.shoppingmall.product.entity.Product;
 import com.shoppingmall.product.entity.ProductDetail;
 import com.shoppingmall.product.service.ProductService;
@@ -44,7 +46,6 @@ public class ProductController {
                             .name(productDetail.getName())
                             .price(productDetail.getPrice())
                             .deliveryFee(productDetail.getDeliveryFee())
-                            .summary(productDetail.getSummary())
                             .user_id(String.valueOf(productDetail.getUser().getId()))
                             .quantity(productDetail.getQuantity())
                             .category(product.getCategory())
@@ -63,7 +64,7 @@ public class ProductController {
         LOGGER.debug("add product");
         Random random = new Random();
         String fileName = productDto.getImage().getOriginalFilename() + random.nextInt(100000);
-        Boolean isProductSaved = productService.addProduct(productDto);
+        Boolean isProductSaved = productService.addProduct(productDto, fileName);
         if (isProductSaved) {
             Boolean isUploaded = productService.uploadProductImage(productDto.getImage(), fileName);
             return ResponseEntity.ok(isUploaded);
@@ -71,11 +72,47 @@ public class ProductController {
         return ResponseEntity.ok(false);
     }
 
+    @PutMapping("/edit/product")
+    public ResponseEntity<Boolean> editProduct(@ModelAttribute ProductDto productDto) throws IOException {
+        Boolean isEdited = productService.editProduct(productDto);
+        return ResponseEntity.ok(isEdited);
+    }
+
+    @PutMapping("/edit/product/without/image")
+    public ResponseEntity<Boolean> editProductWithoutImage(@RequestBody ProductDtoWithoutImage productDto) {
+        Boolean isEdited = productService.editProductWithoutImage(productDto);
+        return ResponseEntity.ok(isEdited);
+    }
+
     @DeleteMapping("/delete/products")
     public ResponseEntity<Boolean> deleteProducts(@RequestHeader List<String> productIds, @RequestHeader List<String> imagePaths) throws IOException {
         LOGGER.debug("delete products");
         Boolean isDeleted = productService.deleteProducts(productIds, imagePaths);
         return ResponseEntity.ok(isDeleted);
+    }
+
+    @GetMapping("/get/by/sub/category")
+    public ResponseEntity<List<ProductDto>> getProductsBySubCategory(@RequestParam String category, @RequestParam String subCategory) {
+        List<ProductDto> productDtoList = new ArrayList<>();
+        List<ProductDetail> productDetails = productService.findProductsBySubCategory(subCategory);
+        productDetails.stream().forEach(
+                productDetail -> {
+                    ProductDto productDto = ProductDto.builder()
+                            .id(productDetail.getId())
+                            .name(productDetail.getName())
+                            .price(productDetail.getPrice())
+                            .deliveryFee(productDetail.getDeliveryFee())
+                            .user_id(String.valueOf(productDetail.getUser().getId()))
+                            .quantity(productDetail.getQuantity())
+                            .category(Category.valueOf(category))
+                            .subCategory(productDetail.getSubCategory())
+                            .imagePath(productDetail.getImage())
+                            .build();
+
+                    productDtoList.add(productDto);
+                }
+        );
+        return ResponseEntity.ok(productDtoList);
     }
 
 }

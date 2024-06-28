@@ -12,7 +12,7 @@ import org.springframework.web.multipart.MultipartFile;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class ProductDto {
+public class ProductDtoWithoutImage {
 
     private Long id;
     private String name;
@@ -22,7 +22,5 @@ public class ProductDto {
     private Category category;
     private String subCategory;
     private int deliveryFee;
-    private MultipartFile image;
-    private String user_id;
-    private String imagePath;
+
 }

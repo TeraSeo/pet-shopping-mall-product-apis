@@ -1,5 +1,6 @@
 package com.shoppingmall.product.service;
 
+import com.shoppingmall.product.dto.ProductDto;
 import com.shoppingmall.product.repository.ProductRepository;
 import com.shoppingmall.product.repository.UserRepository;
 import org.junit.jupiter.api.Test;
@@ -49,5 +50,10 @@ class ProductServiceImplTest {
         LOGGER.debug("products1: " + productRepository.findById(9L).get().getProductDetails().size());
         LOGGER.debug("products2: " + productRepository.findById(10L).get().getProductDetails().size());
         assertEquals(isDeleted, true);
+    }
+
+    @Test
+    void findProductsBySubCategory() {
+        productService.findProductsBySubCategory("캔/파우치");
     }
 }

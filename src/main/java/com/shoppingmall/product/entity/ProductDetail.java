@@ -19,8 +19,6 @@ public class ProductDetail extends BaseEntity {
     @Column(nullable = false)
     private String name;
     @Column(nullable = false)
-    private String summary;
-    @Column(nullable = false)
     private int quantity;
     @Column(nullable = false)
     private int price;

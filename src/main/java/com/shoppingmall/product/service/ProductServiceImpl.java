@@ -3,6 +3,7 @@ package com.shoppingmall.product.service;
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.shoppingmall.product.dto.ProductDto;
+import com.shoppingmall.product.dto.ProductDtoWithoutImage;
 import com.shoppingmall.product.entity.Product;
 import com.shoppingmall.product.entity.ProductDetail;
 import com.shoppingmall.product.entity.User;
@@ -20,6 +21,7 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Random;
 
 @Service
 public class ProductServiceImpl implements ProductService {
@@ -43,7 +45,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public Boolean addProduct(ProductDto productDto) {
+    public Boolean addProduct(ProductDto productDto, String fileName) {
         Optional<Product> p = productRepository.findByCategory(productDto.getCategory());
         Product product;
         if (p.isPresent()) {
@@ -67,11 +69,10 @@ public class ProductServiceImpl implements ProductService {
 
         ProductDetail productDetail = ProductDetail.builder()
                 .name(productDto.getName())
-                .summary(productDto.getSummary())
                 .price(productDto.getPrice())
                 .quantity(productDto.getQuantity())
                 .deliveryFee(productDto.getDeliveryFee())
-                .image(productDto.getImage().getOriginalFilename())
+                .image(fileName)
                 .subCategory(productDto.getSubCategory())
                 .user(user)
                 .build();
@@ -128,5 +129,83 @@ public class ProductServiceImpl implements ProductService {
             deleteProductImage(path);
         }
         return true;
+    }
+
+    @Override
+    public Boolean editProduct(ProductDto productDto) throws IOException {
+        Long id = productDto.getId();
+        Optional<ProductDetail> p = productDetailRepository.findById(id);
+        if (p.isPresent()) {
+            Random random = new Random();
+            String fileName = productDto.getImage().getOriginalFilename() + random.nextInt(100000);
+            ProductDetail productDetail = p.get();
+            productDetail.setName(productDto.getName());
+            productDetail.setQuantity(productDto.getQuantity());
+            productDetail.setPrice(productDto.getPrice());
+            productDetail.setSubCategory(productDto.getSubCategory());
+            productDetail.setDeliveryFee(productDto.getDeliveryFee());
+            productDetail.setImage(fileName);
+
+            Product product;
+            Optional<Product> o = productRepository.findByCategory(productDto.getCategory());
+            if (o.isEmpty()) {
+                product = Product.builder()
+                        .category(productDto.getCategory())
+                        .productDetails(new HashSet<>())
+                        .build();
+                productRepository.save(product);
+            }
+            else {
+                product = o.get();
+            }
+
+            product.addProductDetail(productDetail);
+            productDetailRepository.save(productDetail);
+
+            deleteProductImage(productDto.getImagePath());
+            uploadProductImage(productDto.getImage(), fileName);
+
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public Boolean editProductWithoutImage(ProductDtoWithoutImage productDto) {
+        Long id = productDto.getId();
+        Optional<ProductDetail> p = productDetailRepository.findById(id);
+        if (p.isPresent()) {
+            ProductDetail productDetail = p.get();
+            productDetail.setName(productDto.getName());
+            productDetail.setQuantity(productDto.getQuantity());
+            productDetail.setPrice(productDto.getPrice());
+            productDetail.setSubCategory(productDto.getSubCategory());
+            productDetail.setDeliveryFee(productDto.getDeliveryFee());
+
+            Product product;
+            Optional<Product> o = productRepository.findByCategory(productDto.getCategory());
+            if (o.isEmpty()) {
+                product = Product.builder()
+                        .category(productDto.getCategory())
+                        .productDetails(new HashSet<>())
+                        .build();
+                productRepository.save(product);
+            }
+            else {
+                product = o.get();
+            }
+
+            product.addProductDetail(productDetail);
+            productDetailRepository.save(productDetail);
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public List<ProductDetail> findProductsBySubCategory(String subCategory) {
+        List<ProductDetail> productDetails = productDetailRepository.findAllBySubCategory(subCategory);
+        LOGGER.debug("size: " + productDetails.size());
+        return productDetails;
     }
 }

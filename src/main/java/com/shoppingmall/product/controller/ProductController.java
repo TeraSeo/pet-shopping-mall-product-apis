@@ -85,16 +85,16 @@ public class ProductController {
     }
 
     @DeleteMapping("/delete/products")
-    public ResponseEntity<Boolean> deleteProducts(@RequestHeader List<String> productIds, @RequestHeader List<String> imagePaths) throws IOException {
+    public ResponseEntity<Boolean> deleteProducts(@RequestHeader List<String> productIds) throws IOException {
         LOGGER.debug("delete products");
-        Boolean isDeleted = productService.deleteProducts(productIds, imagePaths);
+        Boolean isDeleted = productService.deleteProducts(productIds);
         return ResponseEntity.ok(isDeleted);
     }
 
     @GetMapping("/get/by/sub/category")
     public ResponseEntity<List<ProductDto>> getProductsBySubCategory(@RequestParam String category, @RequestParam String subCategory) {
         List<ProductDto> productDtoList = new ArrayList<>();
-        List<ProductDetail> productDetails = productService.findProductsBySubCategory(subCategory);
+        List<ProductDetail> productDetails = productService.findProductsBySubCategory(category, subCategory);
         productDetails.stream().forEach(
                 productDetail -> {
                     ProductDto productDto = ProductDto.builder()

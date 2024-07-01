@@ -19,9 +19,9 @@ public interface ProductService {
 
     List<Product> getAllProducts();
 
-    Boolean deleteProducts(List<String> productIds, List<String> imagePaths);
+    Boolean deleteProducts(List<String> productIds);
 
     Boolean editProduct(ProductDto productDto) throws IOException;
     Boolean editProductWithoutImage(ProductDtoWithoutImage productDto);
-    List<ProductDetail> findProductsBySubCategory(String subCategory);
+    List<ProductDetail> findProductsBySubCategory(String category, String subCategory);
 }

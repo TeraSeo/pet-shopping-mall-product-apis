@@ -18,10 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Random;
+import java.util.*;
 
 @Service
 public class ProductServiceImpl implements ProductService {
@@ -108,12 +105,9 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public Boolean deleteProducts(List<String> productDetailIds, List<String> imagePaths) {
-        int size = Math.min(productDetailIds.size(), imagePaths.size());
-        for (int i = 0; i < size; i++) {
+    public Boolean deleteProducts(List<String> productDetailIds) {
+        for (int i = 0; i < productDetailIds.size(); i++) {
             String id = productDetailIds.get(i);
-            String path = imagePaths.get(i);
-
             Optional<ProductDetail> p = productDetailRepository.findById(Long.valueOf(id));
             if (p.isPresent()) {
                 ProductDetail productDetail = p.get();
@@ -122,11 +116,9 @@ public class ProductServiceImpl implements ProductService {
 
                 product.removeProductDetail(productDetail);
                 user.removeProductDetail(productDetail);
-
+                deleteProductImage(productDetail.getImage());
                 productRepository.save(product);
             }
-
-            deleteProductImage(path);
         }
         return true;
     }
@@ -176,6 +168,11 @@ public class ProductServiceImpl implements ProductService {
         Optional<ProductDetail> p = productDetailRepository.findById(id);
         if (p.isPresent()) {
             ProductDetail productDetail = p.get();
+
+            Optional<Product> originalProduct = productRepository.findByCategory(productDetail.getProduct().getCategory());
+            Product originalP = originalProduct.get();
+            originalP.removeProductDetail(productDetail);
+
             productDetail.setName(productDto.getName());
             productDetail.setQuantity(productDto.getQuantity());
             productDetail.setPrice(productDto.getPrice());
@@ -196,6 +193,8 @@ public class ProductServiceImpl implements ProductService {
             }
 
             product.addProductDetail(productDetail);
+            LOGGER.debug("product detail added");
+
             productDetailRepository.save(productDetail);
             return true;
         }
@@ -203,9 +202,18 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public List<ProductDetail> findProductsBySubCategory(String subCategory) {
+    public List<ProductDetail> findProductsBySubCategory(String category, String subCategory) {
         List<ProductDetail> productDetails = productDetailRepository.findAllBySubCategory(subCategory);
-        LOGGER.debug("size: " + productDetails.size());
+        if (subCategory.equals("기타")) {
+            List<ProductDetail> detailList = new ArrayList<>();
+            productDetails.stream().forEach(productDetail -> {
+                Product product = productDetail.getProduct();
+                if (product.getCategory().toString().equals(category)) {
+                    detailList.add(productDetail);
+                }
+            });
+            return detailList;
+        }
         return productDetails;
     }
 }

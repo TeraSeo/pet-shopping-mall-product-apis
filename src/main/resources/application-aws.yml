@@ -1,0 +1,10 @@
+#spring:
+#  profiles:
+#    include: ap-northeast-2
+#
+#s3:
+#  credentials:
+#    access-key: AKIAXYKJVHAD3SHSV55A
+#    secret-key: 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
+#  region: ap-northeast-2
+#  bucket: pet-shopping-mall-bucket

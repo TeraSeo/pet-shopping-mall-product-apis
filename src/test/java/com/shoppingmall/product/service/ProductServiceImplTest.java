@@ -1,6 +1,8 @@
 package com.shoppingmall.product.service;
 
 import com.shoppingmall.product.dto.ProductDto;
+import com.shoppingmall.product.entity.Category;
+import com.shoppingmall.product.entity.Product;
 import com.shoppingmall.product.repository.ProductRepository;
 import com.shoppingmall.product.repository.UserRepository;
 import org.junit.jupiter.api.Test;
@@ -12,6 +14,7 @@ import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -45,7 +48,7 @@ class ProductServiceImplTest {
 
     @Test
     void deleteProducts() {
-        Boolean isDeleted = productService.deleteProducts(List.of("11"), List.of("test1.png"));
+        Boolean isDeleted = productService.deleteProducts(List.of("11"));
         LOGGER.debug("users: " + userRepository.findById(18L).get().getProductDetails().size());
         LOGGER.debug("products1: " + productRepository.findById(9L).get().getProductDetails().size());
         LOGGER.debug("products2: " + productRepository.findById(10L).get().getProductDetails().size());
@@ -54,6 +57,11 @@ class ProductServiceImplTest {
 
     @Test
     void findProductsBySubCategory() {
-        productService.findProductsBySubCategory("캔/파우치");
+        productService.findProductsBySubCategory("스낵","기타");
+    }
+
+    @Test
+    void saveProduct() {
+        productRepository.save(Product.builder().category(Category.위생용품).productDetails(new HashSet<>()).build());
     }
 }

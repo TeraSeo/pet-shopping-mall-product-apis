@@ -24,4 +24,5 @@ public interface ProductService {
     Boolean editProduct(ProductDto productDto) throws IOException;
     Boolean editProductWithoutImage(ProductDtoWithoutImage productDto);
     List<ProductDetail> findProductsBySubCategory(String category, String subCategory);
+    List<ProductDetail> findProductsByCategory(String category);
 }

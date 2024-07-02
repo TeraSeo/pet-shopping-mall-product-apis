@@ -91,6 +91,30 @@ public class ProductController {
         return ResponseEntity.ok(isDeleted);
     }
 
+    @GetMapping("/get/by/category")
+    public ResponseEntity<List<ProductDto>> getProductsByCategory(@RequestParam String category) {
+        List<ProductDto> productDtoList = new ArrayList<>();
+        List<ProductDetail> productDetails = productService.findProductsByCategory(category);
+        productDetails.stream().forEach(
+                productDetail -> {
+                    ProductDto productDto = ProductDto.builder()
+                            .id(productDetail.getId())
+                            .name(productDetail.getName())
+                            .price(productDetail.getPrice())
+                            .deliveryFee(productDetail.getDeliveryFee())
+                            .user_id(String.valueOf(productDetail.getUser().getId()))
+                            .quantity(productDetail.getQuantity())
+                            .category(Category.valueOf(category))
+                            .subCategory(productDetail.getSubCategory())
+                            .imagePath(productDetail.getImage())
+                            .build();
+
+                    productDtoList.add(productDto);
+                }
+        );
+        return ResponseEntity.ok(productDtoList);
+    }
+
     @GetMapping("/get/by/sub/category")
     public ResponseEntity<List<ProductDto>> getProductsBySubCategory(@RequestParam String category, @RequestParam String subCategory) {
         List<ProductDto> productDtoList = new ArrayList<>();

@@ -4,6 +4,7 @@ import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.shoppingmall.product.dto.ProductDto;
 import com.shoppingmall.product.dto.ProductDtoWithoutImage;
+import com.shoppingmall.product.entity.Category;
 import com.shoppingmall.product.entity.Product;
 import com.shoppingmall.product.entity.ProductDetail;
 import com.shoppingmall.product.entity.User;
@@ -215,5 +216,19 @@ public class ProductServiceImpl implements ProductService {
             return detailList;
         }
         return productDetails;
+    }
+
+    @Override
+    public List<ProductDetail> findProductsByCategory(String category) {
+        Optional<Product> p = productRepository.findByCategory(Category.valueOf(category));
+        List<ProductDetail> productDetailList = new ArrayList<>();
+        if (p.isPresent()) {
+            Product product = p.get();
+            Set<ProductDetail> productDetails = product.getProductDetails();
+            productDetails.stream().forEach(productDetail -> {
+                productDetailList.add(productDetail);
+            });
+        }
+        return productDetailList;
     }
 }
